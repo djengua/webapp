@@ -1,8 +1,13 @@
-FROM golang:1.20.8-alpine3.18
+#build stage
+FROM golang:latest AS builder
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY *.go ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-webapp
-EXPOSE 8080
-CMD [ "/docker-webapp" ]
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main main.go
+
+FROM alpine:3.13
+WORKDIR /app
+COPY --from=builder /app/main .
+
+
+EXPOSE 8081
+CMD [ "/app/main" ]
